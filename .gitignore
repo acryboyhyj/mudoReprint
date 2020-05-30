@@ -1,0 +1,53 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+#vscode
+.vscode/*
+*.vscode
+GPATH
+GRTAGS
+GTAGS
+
+
+
+MakeLists.txt.user
+MakeCache.txt
+MakeFiles
+MakeScripts
+esting
+akefile
+make_install.cmake
+nstall_manifest.txt
+ompile_commands.json
+TestTestfile.cmake
+deps
