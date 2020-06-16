@@ -129,12 +129,12 @@ int TimerQueue::createTimerfd()
     return timerfd;
 }
 
-void TimerQueue::handleRead(int timerfd)
+void TimerQueue::handleRead(Timestamp now)
 {
     LOG_TRACE << "handleread timerfd event";
 
     uint64_t howmany;
-    ssize_t n = ::read(timerfd, &howmany, sizeof howmany);
+    ssize_t n = ::read(m_timerfd, &howmany, sizeof howmany);
     LOG_TRACE << "TimerQueue::handleRead() " << howmany << " at ";
     // << now.toString();
     if (n != sizeof howmany)

@@ -4,11 +4,13 @@
 #include <functional>
 #include <string>
 #include <sys/epoll.h>
+#include "muduo/base/Timestamp.h"
+using muduo::Timestamp;
 class EventLoop;
 class Channel
 {
   typedef std::function<void()> EventCallback;
-  typedef std::function<void(int)> REventCallback;
+  typedef std::function<void(Timestamp readTime)> REventCallback;
 
 public:
   Channel(EventLoop *loop, int fd);
@@ -28,7 +30,7 @@ public:
   void disableAll()
   {
     m_events = 0;
-    update();
+    remove();
   }
 
   void setReadCallback(REventCallback cb) { m_readCallback = std::move(cb); }
@@ -37,7 +39,7 @@ public:
   void setErrorCallback(EventCallback cb) { m_errorCallback = std::move(cb); }
 
   void setRevent(int event);
-  void handleEvent();
+  void handleEvent(Timestamp pollReturnTime);
   int fd() { return m_fd; };
   int events() { return m_events; }
   EventLoop *ownLoop() { return m_eventLoop; }

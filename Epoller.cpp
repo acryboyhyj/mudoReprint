@@ -31,12 +31,12 @@ Epoller::Epoller()
 
 Epoller::~Epoller() { ::close(m_epollfd); }
 
-void Epoller::poll(std::vector<Channel *> &activeChannel, int timeoutMs)
+Timestamp Epoller::poll(std::vector<Channel *> &activeChannel, int timeoutMs)
 {
   int numEvents = ::epoll_wait(m_epollfd, &*m_events.begin(),
                                static_cast<int>(m_events.size()), timeoutMs);
   int savedErrno = errno;
-
+  Timestamp now(Timestamp::now());
   if (numEvents > 0)
   {
     LOG_TRACE << numEvents << " events happened";
@@ -60,7 +60,7 @@ void Epoller::poll(std::vector<Channel *> &activeChannel, int timeoutMs)
     }
   }
 
-  return;
+  return now;
 }
 void Epoller::fillActiveChannels(std::vector<Channel *> &activeChannel,
                                  int numEvents)
@@ -95,9 +95,9 @@ void Epoller::updateEvent(int operation, Channel *channel)
   memZero(&event, sizeof event);
   event.events = channel->events();
   event.data.ptr = channel;
-  LOG_TRACE << "epoll_ctl op = " << operationToString(operation)
-            << " fd = " << channel->fd() << " event = { "
-            << eventsToString(channel->fd(), event.events) << " }";
+  LOG_WARN << "epoll_ctl op = " << operationToString(operation)
+           << " fd = " << channel->fd() << " event = { "
+           << eventsToString(channel->fd(), event.events) << " }";
   if (::epoll_ctl(m_epollfd, operation, channel->fd(), &event) < 0)
   {
     if (operation == EPOLL_CTL_DEL)
@@ -132,15 +132,15 @@ string Epoller::eventsToString(int fd, int ev)
   return oss.str();
 }
 
-int Epoller::updateChannel(int operation, Channel *channel)
+int Epoller::updateChannel(Channel *channel)
 {
-  LOG_WARN << "THRER";
-  updateEvent(operation, channel);
+
+  updateEvent(EPOLL_CTL_ADD, channel);
   return 0;
 }
-int Epoller::removeChannel(int operation, Channel *channel)
+int Epoller::removeChannel(Channel *channel)
 {
-  LOG_WARN << "THIS";
-  updateEvent(operation, channel);
+
+  updateEvent(EPOLL_CTL_DEL, channel);
   return 0;
 }

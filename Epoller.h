@@ -17,9 +17,9 @@ public:
   Epoller();
   ~Epoller();
 
-  int updateChannel(int operation, Channel *channel);
-  int removeChannel(int operation, Channel *channel);
-  void poll(std::vector<Channel *> &activeChannels, int timeoutMs);
+  int updateChannel(Channel *channel);
+  int removeChannel(Channel *channel);
+  Timestamp poll(std::vector<Channel *> &activeChannels, int timeoutMs);
   void fillActiveChannels(std::vector<Channel *> &activeChannels, int numEvents);
 
   string eventsToString(int fd, int ev);

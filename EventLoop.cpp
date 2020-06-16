@@ -57,14 +57,13 @@ void EventLoop::loop()
 
     while (!m_quit.load(std::memory_order_relaxed))
     {
-        LOG_WARN << "loop";
         m_activeChannels.clear();
 
-        m_epoller->poll(m_activeChannels, 10000);
+        Timestamp pollReturnTime = m_epoller->poll(m_activeChannels, 10000);
 
         for (const auto &c : m_activeChannels)
         {
-            c->handleEvent();
+            c->handleEvent(pollReturnTime);
         }
 
         doPendingFunctor();
@@ -84,13 +83,13 @@ void EventLoop::quit()
 void EventLoop::updateChannel(Channel *channel)
 {
     assert(channel->ownLoop() == this);
-    m_epoller->updateChannel(EPOLL_CTL_ADD, channel);
+    m_epoller->updateChannel(channel);
 }
 
 void EventLoop::removeChannel(Channel *channel)
 {
     assert(channel->ownLoop() == this);
-    m_epoller->updateChannel(EPOLL_CTL_DEL, channel);
+    m_epoller->removeChannel(channel);
 }
 
 void EventLoop::runInLoop(Functor func)

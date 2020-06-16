@@ -25,7 +25,7 @@ private:
     void addTimerInLoop(Timer *timer);
     typedef std::pair<Timestamp, Timer *> Entry;
     int createTimerfd();
-    void handleRead(int fd);
+    void handleRead(Timestamp now);
 
     bool insert(Timer *timer);
     struct timespec howMuchTimeFromNow(Timestamp when);

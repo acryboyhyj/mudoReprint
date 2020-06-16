@@ -22,7 +22,7 @@ Channel::Channel(EventLoop *loop, int fd)
 Channel::~Channel()
 {
 }
-void Channel::handleEvent()
+void Channel::handleEvent(Timestamp pollReturnTime)
 {
     int revent = m_revent;
     if ((revent & EPOLLHUP) && !(revent & EPOLLIN))
@@ -44,7 +44,7 @@ void Channel::handleEvent()
     if (revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
     {
         if (m_readCallback)
-            m_readCallback(this->fd());
+            m_readCallback(pollReturnTime);
     }
     if (revent & EPOLLOUT)
     {

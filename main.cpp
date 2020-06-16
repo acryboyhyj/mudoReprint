@@ -1,10 +1,15 @@
 #include <thread>
 #include <functional>
 #include <iostream>
+#include <utility>
 #include "EventLoop.h"
+#include "Socket.h"
 #include "muduo/base/Logging.h"
 #include "muduo/base/Timestamp.h"
 #include "muduo/net/EventLoop.h"
+#include "TcpServer.h"
+#include "TcpConnection.h"
+#include "muduo/net/Buffer.h"
 EventLoop eventLoop;
 
 int afercnt = 0;
@@ -84,18 +89,34 @@ void run1()
     eventLoop.runInLoop(run2);
     g_flag = 2;
 }
+void testConnection(std::shared_ptr<TcpConnection> &conn)
+{
+    LOG_INFO << "EchoServer - " << conn->peerAddress().toIpPort() << " -> "
+             << conn->localAddress().toIpPort() << " is "
+             << (conn->connected() ? "UP" : "DOWN");
+}
+void testMessage(muduo::net::Buffer *buffer, Timestamp time)
+{
+    std::string msg(buffer->retrieveAllAsString());
+    LOG_INFO << " echo " << msg.size() << " bytes, "
+             << "data received at " << time.toString();
+    //  conn->name()
+}
+void testTcpServer()
+{
+    InetAddress svraddr("0.0.0.0", 13000);
+    std::string name("echoserver");
+    TcpServer server(name, svraddr);
+    server.setConnectionCallback(std::bind(testConnection, std::placeholders::_1));
+    server.setMessageCacllback(std::bind(testMessage, std::placeholders::_1, std::placeholders::_2));
+    server.start();
+}
 
 int main()
 {
 
     LOG_WARN << "main thread id" << muduo::CurrentThread::tid();
-    Timestamp now = Timestamp::now();
-    Timestamp after = addTime(now, 5);
+    std::thread tcpserver(testTcpServer);
 
-    std::thread t(run1);
-    eventLoop.loop();
-    if (t.joinable())
-    {
-        t.join();
-    }
+    tcpserver.join();
 }

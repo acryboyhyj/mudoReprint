@@ -1,15 +1,21 @@
 cmake_minimum_required(VERSION 3.0)
 
 set(SRC_LIST
-    Epoller.cpp
-    Channel.cpp 
-    Epoller.cpp 
-    EventLoop.cpp 
-    NetServer.cpp
-    TimerQueue.cpp
     main.cpp
+    TcpServer.cpp    
+    TcpConnection.cpp
+    Acceptor.cpp
+    CallBacks.cpp
+    EventLoop.cpp
+    Epoller.cpp 
+    Channel.cpp 
+    TimerQueue.cpp
+    Socket.cpp  
+    SocketsOps.cpp
+    InetAddress.cpp
+
 )
-add_definitions(-std=c++11 -g -Wall)
+add_definitions(-std=c++14 -g -Wall )
 
 add_executable(epoll ${SRC_LIST})
 

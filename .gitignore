@@ -38,7 +38,7 @@ GPATH
 GRTAGS
 GTAGS
 
-
+build/
 
 MakeLists.txt.user
 MakeCache.txt
