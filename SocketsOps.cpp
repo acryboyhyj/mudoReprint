@@ -119,9 +119,9 @@ int sockets::accept(int sockfd, struct sockaddr_in6 *addr)
   int connfd = ::accept(sockfd, sockaddr_cast(addr), &addrlen);
   setNonBlockAndCloseOnExec(connfd);
 #else
-  // int connfd = ::accept4(sockfd, sockaddr_cast(addr),
-  //                        &addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
-  int connfd = ::accept4(sockfd, sockaddr_cast(addr), &addrlen, SOCK_CLOEXEC);
+  int connfd = ::accept4(sockfd, sockaddr_cast(addr),
+                         &addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+  // int connfd = ::accept4(sockfd, sockaddr_cast(addr), &addrlen, SOCK_CLOEXEC);
 #endif
   if (connfd < 0)
   {

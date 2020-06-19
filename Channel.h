@@ -23,8 +23,22 @@ public:
   }
   void disableReading()
   {
-    m_events &= !EPOLLIN;
+    m_events &= ~EPOLLIN;
     remove();
+  }
+  bool isWriting()
+  {
+    return m_events & EPOLLOUT;
+  }
+  void enableWrite()
+  {
+    m_events |= EPOLLOUT;
+    update();
+  }
+  void disableWrite()
+  {
+    m_events &= ~EPOLLOUT;
+    update();
   }
 
   void disableAll()
@@ -45,10 +59,15 @@ public:
   EventLoop *ownLoop() { return m_eventLoop; }
   void remove();
 
+  bool isNoneEvent() const { return m_events == kNoneEvent; }
+  int index() { return m_index; }
+  void set_index(int idx) { m_index = idx; }
+
 private:
   void update();
 
   int m_fd;
+  int m_index;
   EventLoop *m_eventLoop;
   int m_events;
   int m_revent;
@@ -57,6 +76,8 @@ private:
   EventCallback m_writeCallback;
   EventCallback m_closeCallback;
   EventCallback m_errorCallback;
+
+  static const int kNoneEvent = 0;
 };
 
 #endif

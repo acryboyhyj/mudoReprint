@@ -4,7 +4,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-
+#include <map>
 #include "Channel.h"
 using std::string;
 using std::placeholders::_1;
@@ -28,8 +28,6 @@ public:
 private:
   static const int kInitEventListSize = 16;
   void updateEvent(int operation, Channel *channel);
-  // void fillActiveChannels(int numEvents, ChannelList* activeChannels) const;
-  // void update(int operation, Channel* channel);
 
   typedef std::vector<struct epoll_event> EventList;
 
@@ -37,6 +35,8 @@ private:
   EventList m_events;
   int m_listenfd;
 
+  using channelMap = std::map<int, Channel *>;
+  channelMap m_channelMap;
   Channel *m_channel;
 };
 

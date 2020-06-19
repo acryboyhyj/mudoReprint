@@ -95,12 +95,18 @@ void testConnection(std::shared_ptr<TcpConnection> &conn)
              << conn->localAddress().toIpPort() << " is "
              << (conn->connected() ? "UP" : "DOWN");
 }
-void testMessage(muduo::net::Buffer *buffer, Timestamp time)
+void testMessage(TcpConnectionPtr &conn, muduo::net::Buffer *buffer, Timestamp time)
 {
     std::string msg(buffer->retrieveAllAsString());
     LOG_INFO << " echo " << msg.size() << " bytes, "
              << "data received at " << time.toString();
-    //  conn->name()
+
+    std::string msga(8000 * 1024, 'a');
+    msga += 'b';
+    if (conn->connected())
+    {
+        conn->send(msga);
+    }
 }
 void testTcpServer()
 {
@@ -108,7 +114,9 @@ void testTcpServer()
     std::string name("echoserver");
     TcpServer server(name, svraddr);
     server.setConnectionCallback(std::bind(testConnection, std::placeholders::_1));
-    server.setMessageCacllback(std::bind(testMessage, std::placeholders::_1, std::placeholders::_2));
+    server.setMessageCacllback(std::bind(testMessage, std::placeholders::_1,
+                                         std::placeholders::_2,
+                                         std::placeholders::_3));
     server.start();
 }
 

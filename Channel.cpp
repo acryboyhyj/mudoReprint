@@ -13,9 +13,11 @@
 #include "EventLoop.h"
 Channel::Channel(EventLoop *loop, int fd)
     : m_fd(fd),
+      m_index(-1),
       m_eventLoop(loop),
       m_events(0),
       m_revent(0)
+
 {
 }
 

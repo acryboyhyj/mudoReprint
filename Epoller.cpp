@@ -134,13 +134,64 @@ string Epoller::eventsToString(int fd, int ev)
 
 int Epoller::updateChannel(Channel *channel)
 {
+  const int index = channel->index();
+  LOG_TRACE << "fd = " << channel->fd() << " events = " << channel->events()
+            << " index = " << index;
+  if (index == kNew || index == kDeleted)
+  {
+    // a new one, add with EPOLL_CTL_ADD
+    int fd = channel->fd();
+    if (index == kNew)
+    {
+      assert(m_channelMap.find(fd) == m_channelMap.end());
+      m_channelMap[fd] = channel;
+    }
+    else // index == kDeleted
+    {
+      assert(m_channelMap.find(fd) != m_channelMap.end());
+      assert(m_channelMap[fd] == channel);
+    }
 
-  updateEvent(EPOLL_CTL_ADD, channel);
+    channel->set_index(kAdded);
+    updateEvent(EPOLL_CTL_ADD, channel);
+  }
+  else
+  {
+    // updateEvent existing one with EPOLL_CTL_MOD/DEL
+    int fd = channel->fd();
+    (void)fd;
+    assert(m_channelMap.find(fd) != m_channelMap.end());
+    assert(m_channelMap[fd] == channel);
+    assert(index == kAdded);
+    if (channel->isNoneEvent())
+    {
+      updateEvent(EPOLL_CTL_DEL, channel);
+      channel->set_index(kDeleted);
+    }
+    else
+    {
+      updateEvent(EPOLL_CTL_MOD, channel);
+    }
+  }
   return 0;
 }
 int Epoller::removeChannel(Channel *channel)
 {
+  int fd = channel->fd();
+  LOG_TRACE << "fd = " << fd;
+  assert(m_channelMap.find(fd) != m_channelMap.end());
+  assert(m_channelMap[fd] == channel);
+  assert(channel->isNoneEvent());
+  int index = channel->index();
+  assert(index == kAdded || index == kDeleted);
+  size_t n = m_channelMap.erase(fd);
 
-  updateEvent(EPOLL_CTL_DEL, channel);
+  assert(n == 1);
+
+  if (index == kAdded)
+  {
+    updateEvent(EPOLL_CTL_DEL, channel);
+  }
+  channel->set_index(kNew);
   return 0;
 }

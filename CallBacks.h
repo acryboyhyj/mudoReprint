@@ -8,7 +8,7 @@ class TcpConnection;
 using muduo::Timestamp;
 using muduo::net::Buffer;
 using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
-using MessageCallBack = std::function<void(Buffer *buffer, Timestamp time)>;
+using MessageCallBack = std::function<void(TcpConnectionPtr &conn, Buffer *buffer, Timestamp time)>;
 
 void defaultConnectionCallBack(TcpConnectionPtr &conn);
 
