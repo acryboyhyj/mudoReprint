@@ -178,10 +178,10 @@ int Epoller::updateChannel(Channel *channel)
 int Epoller::removeChannel(Channel *channel)
 {
   int fd = channel->fd();
-  LOG_TRACE << "fd = " << fd;
+  LOG_WARN << "reomve fd = " << fd;
   assert(m_channelMap.find(fd) != m_channelMap.end());
   assert(m_channelMap[fd] == channel);
-  assert(channel->isNoneEvent());
+  // assert(channel->isNoneEvent());
   int index = channel->index();
   assert(index == kAdded || index == kDeleted);
   size_t n = m_channelMap.erase(fd);

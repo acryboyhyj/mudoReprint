@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
 
 set(SRC_LIST
-    main.cpp
+    #main.cpp
+    EventThreadPoll_test.cpp
     TcpServer.cpp    
     TcpConnection.cpp
     Acceptor.cpp
+    EventLoopThreadPoll.cpp
+    EventLoopThread.cpp
     CallBacks.cpp
     EventLoop.cpp
     Epoller.cpp 

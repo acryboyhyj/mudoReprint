@@ -101,23 +101,29 @@ void testMessage(TcpConnectionPtr &conn, muduo::net::Buffer *buffer, Timestamp t
     LOG_INFO << " echo " << msg.size() << " bytes, "
              << "data received at " << time.toString();
 
-    std::string msga(8000 * 1024, 'a');
-    msga += 'b';
     if (conn->connected())
     {
-        conn->send(msga);
+        conn->send(msg);
     }
 }
 void testTcpServer()
 {
+    LOG_WARN << "testTcpserver thread id" << muduo::CurrentThread::tid();
     InetAddress svraddr("0.0.0.0", 13000);
     std::string name("echoserver");
+
     TcpServer server(name, svraddr);
     server.setConnectionCallback(std::bind(testConnection, std::placeholders::_1));
     server.setMessageCacllback(std::bind(testMessage, std::placeholders::_1,
                                          std::placeholders::_2,
                                          std::placeholders::_3));
+    server.setThreadNum(3);
     server.start();
+    LOG_WARN << "222222222222222222222222222";
+    while (1)
+    {
+        sleep(1);
+    }
 }
 
 int main()

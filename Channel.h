@@ -44,7 +44,7 @@ public:
   void disableAll()
   {
     m_events = 0;
-    remove();
+    update();
   }
 
   void setReadCallback(REventCallback cb) { m_readCallback = std::move(cb); }

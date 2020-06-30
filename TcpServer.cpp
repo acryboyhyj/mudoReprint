@@ -1,12 +1,15 @@
 #include "TcpServer.h"
 #include "Acceptor.h"
 #include "TcpConnection.h"
+#include "EventLoopThreadPoll.h"
 #include <string>
 TcpServer::TcpServer(std::string &name, InetAddress server) : m_name(name),
                                                               m_ipPort(server.toIpPort()),
+                                                              m_started(false),
                                                               m_loop(new EventLoop()),
                                                               m_acceptor(new Acceptor(m_loop, server)),
-                                                              m_nextConnfd(1)
+                                                              m_nextConnfd(1),
+                                                              m_loopThreadPoll(new EventLoopThreadPoll(m_loop, m_name))
 {
     m_acceptor->setNewConnectionCallback(std::bind(&TcpServer::handleNewConn, this, std::placeholders::_1, std::placeholders::_2));
     m_acceptor->listen();
@@ -28,9 +31,20 @@ TcpServer::~TcpServer()
     //         std::bind(&TcpConnection::connectDestroyed, conn));
     // }
 }
+
+void TcpServer::setThreadNum(int threadNum)
+{
+    assert(threadNum >= 0);
+    m_loopThreadPoll->setThreadNum(threadNum);
+}
 void TcpServer::start()
 {
-    m_loop->loop();
+
+    if (!m_started.exchange(true, std::memory_order_seq_cst))
+    {
+        m_loopThreadPoll->start();
+        m_loop->loop();
+    }
 }
 
 void TcpServer::handleNewConn(Socket &&socket, InetAddress &peerAddr)
@@ -45,8 +59,10 @@ void TcpServer::handleNewConn(Socket &&socket, InetAddress &peerAddr)
              << "] from " << peerAddr.toIpPort();
 
     InetAddress localAddr(muduo::net::sockets::getLocalAddr(socket.fd()));
+
+    EventLoop *loop = m_loopThreadPoll->getNextLoop();
     std::shared_ptr<TcpConnection> tcpConnection =
-        std::make_shared<TcpConnection>(m_loop,
+        std::make_shared<TcpConnection>(loop,
                                         std::make_unique<Socket>(std::move(socket)),
                                         connName,
                                         localAddr,
@@ -56,7 +72,7 @@ void TcpServer::handleNewConn(Socket &&socket, InetAddress &peerAddr)
     tcpConnection->setConnectionCallBack(m_connCb);
     tcpConnection->setMessageCallBack(m_msgCb);
     tcpConnection->setCloseCallBack(std::bind(&TcpServer::removeConnection, this, std::placeholders::_1));
-
+    ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
     if (m_connCb)
     {
         m_connCb(tcpConnection);
@@ -71,4 +87,15 @@ void TcpServer::removeConnection(TcpConnection::TcpConnectionPtr &ptr)
 
     size_t n = m_connectionList.erase(ptr->name());
     assert(n == 1);
+}
+
+void TcpConnection::connectEstablished()
+{
+    loop_->assertInLoopThread();
+    assert(state_ == kConnecting);
+    setState(kConnected);
+    // channel_->tie(shared_from_this()); //why
+    channel_->enableReading();
+
+    connectionCallback_(shared_from_this());
 }
