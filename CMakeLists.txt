@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 
 set(SRC_LIST
-    #main.cpp
-    EventThreadPoll_test.cpp
+    main.cpp
+    #EventThreadPoll_test.cpp
     TcpServer.cpp    
     TcpConnection.cpp
     Acceptor.cpp
@@ -18,10 +18,22 @@ set(SRC_LIST
     InetAddress.cpp
 
 )
+
+set(ClientSrc
+    ConnTest.cpp
+    Connector.cpp
+    EventLoop.cpp
+    Epoller.cpp
+    Channel.cpp
+    TimerQueue.cpp
+    Socket.cpp  
+    SocketsOps.cpp
+    InetAddress.cpp)
+
 add_definitions(-std=c++14 -g -Wall )
 
 add_executable(epoll ${SRC_LIST})
-
+add_executable(client ${ClientSrc})
 # set(BIND_LIST
 #     bind
 # )
@@ -33,6 +45,11 @@ add_executable(epoll ${SRC_LIST})
 link_directories(/usr/lib/muduo)
 
 target_link_libraries(epoll 
+    muduo_net
+    muduo_base
+    pthread)
+
+target_link_libraries(client 
     muduo_net
     muduo_base
     pthread)

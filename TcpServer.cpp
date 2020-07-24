@@ -61,6 +61,7 @@ void TcpServer::handleNewConn(Socket &&socket, InetAddress &peerAddr)
     InetAddress localAddr(muduo::net::sockets::getLocalAddr(socket.fd()));
 
     EventLoop *loop = m_loopThreadPoll->getNextLoop();
+    LOG_INFO << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     std::shared_ptr<TcpConnection> tcpConnection =
         std::make_shared<TcpConnection>(loop,
                                         std::make_unique<Socket>(std::move(socket)),
@@ -68,15 +69,16 @@ void TcpServer::handleNewConn(Socket &&socket, InetAddress &peerAddr)
                                         localAddr,
                                         peerAddr);
     m_connectionList[tcpConnection->name()] = tcpConnection;
-    tcpConnection->setState(TcpConnection::kConnected);
     tcpConnection->setConnectionCallBack(m_connCb);
     tcpConnection->setMessageCallBack(m_msgCb);
     tcpConnection->setCloseCallBack(std::bind(&TcpServer::removeConnection, this, std::placeholders::_1));
-    ioLoop->runInLoop(std::bind(&TcpConnection::connectEstablished, conn));
+    loop->runInLoop(std::bind(&TcpConnection::connectEstablished, tcpConnection));
+    LOG_INFO << "1111111111111111111111111111111111111111";
     if (m_connCb)
     {
         m_connCb(tcpConnection);
     }
+    LOG_INFO << "222222222222222222222222222222222222222";
 }
 
 void TcpServer::removeConnection(TcpConnection::TcpConnectionPtr &ptr)
@@ -87,15 +89,4 @@ void TcpServer::removeConnection(TcpConnection::TcpConnectionPtr &ptr)
 
     size_t n = m_connectionList.erase(ptr->name());
     assert(n == 1);
-}
-
-void TcpConnection::connectEstablished()
-{
-    loop_->assertInLoopThread();
-    assert(state_ == kConnecting);
-    setState(kConnected);
-    // channel_->tie(shared_from_this()); //why
-    channel_->enableReading();
-
-    connectionCallback_(shared_from_this());
 }

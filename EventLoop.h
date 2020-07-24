@@ -47,7 +47,6 @@ public:
     void runEvery(double interval, Timer::TimerCb cb);
     void runAfter(double delay, Timer::TimerCb cb);
 
-
 private:
     //wakeup
     void wakeup();
@@ -66,7 +65,11 @@ private:
     std::vector<Channel *> m_activeChannels;
     std::unique_ptr<Channel> m_currChannel;
     std::atomic<bool> m_quit;
+
+public:
     const pid_t m_tid;
+
+private:
     std::unique_ptr<TimerQueue> m_timerQueue;
 
     int m_wakeUpFd;

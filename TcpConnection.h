@@ -37,20 +37,31 @@ public:
     void setCloseCallBack(CloseCallBack cb) { m_closeCb = std::move(cb); };
     const InetAddress &localAddress() const { return m_localAddr; }
     const InetAddress &peerAddress() const { return m_peerAddr; }
-    bool connected() const { return m_state.load(std::memory_order_seq_cst) == kConnected; }
-    bool disconnected() const { return m_state.load(std::memory_order_seq_cst) == kDisconnected; }
+    bool connected() const
+    {
+        return m_state.load(std::memory_order_seq_cst) == kConnected;
+    }
+    bool disconnected() const
+    {
+        return m_state.load(std::memory_order_seq_cst) == kDisconnected;
+    }
     std::string name()
     {
         return m_name;
     }
 
     bool connectioned();
-    void setState(ConnectState state) { m_state.store(state, std::memory_order_seq_cst); };
+    void setState(ConnectState state)
+    {
+        m_state.store(state, std::memory_order_seq_cst);
+    };
 
     //write
     void send(std::string &msg);
 
     void shutDown();
+
+    void connectEstablished();
 
 private:
     void shutDownInLoop();

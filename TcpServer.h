@@ -34,7 +34,6 @@ public:
 private:
     void handleNewConn(Socket &&socket, InetAddress &peerAddr);
     void removeConnection(TcpConnection::TcpConnectionPtr &ptr);
-    void connectEstablished();
 
 private:
     std::string m_name;

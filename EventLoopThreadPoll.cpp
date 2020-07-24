@@ -33,6 +33,7 @@ void EventLoopThreadPoll::start(std::function<void(EventLoop *)> threadInitCallB
 EventLoop *EventLoopThreadPoll::getNextLoop()
 {
     m_baseLoop->assertInLoopThread();
+    LOG_INFO << "cccccccccccccccccccccccccccc";
     assert(m_started);
     if (m_loops.size() == 0)
     {

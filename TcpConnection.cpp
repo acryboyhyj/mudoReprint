@@ -10,14 +10,13 @@ TcpConnection::TcpConnection(EventLoop *loop, std::unique_ptr<Socket> &&sockt, s
       m_name(name),
       m_localAddr(localAddr),
       m_peerAddr(peerAddr),
-      m_state(kConnected),
+      m_state(kConnecting),
       m_connCb(&defaultConnectionCallBack)
 
 {
     m_channel->setReadCallback(std::bind(&TcpConnection::handleRead, this, std::placeholders::_1));
     m_channel->setCloseCallback(std::bind(&TcpConnection::handleClose, this));
     m_channel->setWriteCallback(std::bind(&TcpConnection::handleWrite, this));
-    m_channel->enableReading();
 }
 
 TcpConnection::~TcpConnection()
@@ -211,4 +210,15 @@ const char *TcpConnection::stateToString() const
     default:
         return "unknown state";
     }
+}
+void TcpConnection::connectEstablished()
+{
+    m_loop->assertInLoopThread();
+
+    assert(m_state == kConnecting);
+    setState(kConnected);
+    // channel_->tie(shared_from_this()); //why
+    m_channel->enableReading();
+    std::shared_ptr<TcpConnection> guradThis = shared_from_this();
+    m_connCb(guradThis);
 }
